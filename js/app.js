@@ -63,8 +63,10 @@ function onCardClicked(e) {
 
     if(ableToInteract) {
 
-    for(var i = 0; i< cardList.length; i++) {
-        if(cardClicked === cardList[i]) {
+    for(var i = 0; i< cardArray.length; i++) {
+        // Checking cards for strict equality since we want it to 
+        // be the same object we stored earlier that was clicked
+        if(cardClicked === cardArray[i]) {
             console.log("True index" + i);
 
             isCardClickable(cardClicked);
