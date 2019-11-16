@@ -1,7 +1,7 @@
 // Game variables
 const WRONG_MATCH_WAIT_TIME = 1250; // in milliseconds
-const THREE_STAR_SCORE_MAX = 13; // max number of moves to have this score
-const TWO_STAR_SCORE_MAX = 17;
+const THREE_STAR_SCORE_MAX = 10; // max number of moves to have this score
+const TWO_STAR_SCORE_MAX = 14;
 const ONE_STAR_SCORE_MAX = 20;
 const TOTAL_MATCHES_POSSIBLE = 8;
 let numberOfMoves = 0;
