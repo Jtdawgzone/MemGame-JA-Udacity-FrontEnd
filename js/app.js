@@ -8,8 +8,13 @@ let numberOfMoves = 0;
 let matchesLeft = TOTAL_MATCHES_POSSIBLE;
 let openCardArray = [];
 let ableToInteract = false;
+let numberOfSeconds = 0;
+let secondsTimer;
 
 // Queries
+const MODAL = document.querySelector(".modal");
+//const MODAL_CLOSE_BUTTON = document.querySelector(".close-modal-button")
+const GAME_TIMER = document.querySelector(".game-timer");
 const DECK_CONTAINER = document.querySelector(".container");
 const MOVES_TEXT = document.querySelector(".moves");
 const STAR_CONTAINER = document.querySelector(".stars");
@@ -232,17 +237,20 @@ function updateScore() {
 }
 
 function updateStarIndicators() {
-    if(numberOfMoves == THREE_STAR_SCORE_MAX || numberOfMoves == TWO_STAR_SCORE_MAX || numberOfMoves == ONE_STAR_SCORE_MAX)
-    {
-        removeStarElement();
-    }
+  if (
+    numberOfMoves == THREE_STAR_SCORE_MAX ||
+    numberOfMoves == TWO_STAR_SCORE_MAX ||
+    numberOfMoves == ONE_STAR_SCORE_MAX
+  ) {
+    removeStarElement();
+  }
 }
 
 function removeStarElement() {
-    stars = document.querySelectorAll(".fa-star");
-    let starsArray = Array.from(stars);
+  stars = document.querySelectorAll(".fa-star");
+  let starsArray = Array.from(stars);
 
-    starsArray[0].remove();
+  starsArray[0].remove();
 }
 
 // End player's turn
@@ -251,15 +259,16 @@ function endTurn() {
 }
 
 // Reset and start a new game
-function onRestartGame(e) {
-  if (ableToInteract) {
-    ableToInteract = false;
-    removeEventListeners();
-    resetMoves();
-    resetScore();
-    resetOpenCardList();
-    startNewGame();
-  }
+function onRestartGameClicked(e) {
+    if (ableToInteract) {
+        ableToInteract = false;
+        stopTimer = true;
+        removeEventListeners();
+        resetMoves();
+        resetScore();
+        resetOpenCardList();
+        startNewGame();
+    }
 }
 
 // Reset move counter and correspoding CSS
@@ -279,21 +288,67 @@ function createEventListeners() {
 
   // Add listeners
   currentDeck.addEventListener("click", onCardClicked);
-  RESTART_BUTTON.addEventListener("click", onRestartGame);
+  RESTART_BUTTON.addEventListener("click", onRestartGameClicked);
+  //MODAL_CLOSE_BUTTON.addEventListener("click", onModalCloseClicked);
 }
 
 function removeEventListeners() {
   currentDeck.removeEventListener("click", onCardClicked);
-  RESTART_BUTTON.removeEventListener("click", onRestartGame);
+  RESTART_BUTTON.removeEventListener("click", onRestartGameClicked);
+  //MODAL_CLOSE_BUTTON.addEventListener("click", onModalCloseClicked);
+}
+
+function showModalBox() {
+    MODAL.style.display = "block";
+}
+
+function onModalCloseClicked() {
+    MODAL.style.display = "none";
 }
 
 function startNewGame() {
+  resetClock();
   resetStars();
   createNewDeck();
   createEventListeners();
+  startSecondsTimer();
   ableToInteract = true;
 }
 
 function endGame() {
-    
+    showModalBox();
+}
+
+function resetClock() {
+  clearTimeout(secondsTimer);
+  numberOfSeconds = 0;
+  console.log("Clock reset");
+  updateGameTimer();
+}
+
+function startSecondsTimer() {
+  secondsTimer = setTimeout(incrementSecondsTimer, 1000);
+}
+
+function incrementSecondsTimer() {
+    numberOfSeconds++;
+    updateGameTimer();
+    startSecondsTimer();
+}
+
+function updateGameTimer() {
+  GAME_TIMER.innerHTML = formatGameTimerText();
+}
+
+function formatGameTimerText() {
+    let formattedTimerText;
+
+    if(numberOfSeconds >= 0 && numberOfSeconds < 10) {
+        formattedTimerText = "0" + numberOfSeconds;
+    }
+    else {
+        formattedTimerText = numberOfSeconds;
+    }
+
+    return formattedTimerText;
 }
