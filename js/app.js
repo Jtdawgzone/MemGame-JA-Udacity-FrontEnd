@@ -2,9 +2,9 @@
  * GAME VARIABLES
  */
 const WRONG_MATCH_WAIT_TIME = 1250; // in milliseconds
-const THREE_STAR_SCORE_MAX = 10; // max number of moves to have this score
-const TWO_STAR_SCORE_MAX = 14;
-const ONE_STAR_SCORE_MAX = 20;
+const THREE_STAR_SCORE_MAX = 12; // max number of moves to have this score
+const TWO_STAR_SCORE_MAX = 18;
+const ONE_STAR_SCORE_MAX = 28;
 const TOTAL_MATCHES_POSSIBLE = 8;
 const TOTAL_STARS_POSSIBLE = 3;
 let numberOfMoves = 0;
@@ -20,7 +20,6 @@ let modalBoxText;
  * QUERIES
  */
 const MODAL = document.querySelector(".modal");
-const MODAL_CONTENT = document.querySelector(".modal-content");
 const MODAL_CLOSE_BUTTON = document.querySelector(".modal-close-button");
 const GAME_TIMER = document.querySelector(".game-timer");
 const DECK_CONTAINER = document.querySelector(".container");
@@ -33,14 +32,70 @@ let cardList;
 let cardArray = [];
 let shuffledArray = [];
 
+/*
+ * GAME LOGIC SECTION
+ */
+
 // START THE GAME!
 startNewGame();
 
+/*
+ *  SETUP LOGIC SECTION
+ */
+
+/*
+ * Starts a new game
+ */
+function startNewGame() {
+  resetGameTimer();
+  createNewDeck();
+  createEventListeners();
+  startGameTimer();
+  ableToInteract = true;
+}
+
+/*
+ * Handler for reset button
+ */
+function onRestartGameClicked(e) {
+    resetGame();
+}
+
+/*
+ * Reset and start a new game
+ */
+function resetGame() {
+  if (ableToInteract) {
+    ableToInteract = false;
+    stopTimer = true;
+    resetModalBox();
+    removeEventListeners();
+    resetScore();
+    resetOpenCardArray();
+    startNewGame();
+  }
+}
+
+/*
+ * Reset the score
+ */
+function resetScore() {
+  matchesLeft = TOTAL_MATCHES_POSSIBLE;
+  resetStarScore();
+  resetMoves();
+}
+
+/*
+ * Reset the Star score
+ */
 function resetStarScore() {
   starScore = TOTAL_STARS_POSSIBLE;
   resetStars();
 }
 
+/*
+ * Reset the CSS Star elements
+ */
 function resetStars() {
   let stars = document.querySelectorAll(".fa-star");
 
@@ -55,6 +110,9 @@ function resetStars() {
   STAR_CONTAINER.appendChild(starFragment);
 }
 
+/*
+ * Build a star element for the CSS
+ */
 function buildStarElement() {
   let star = document.createElement("li");
   star.innerHTML = "<i class='fa fa-star'></i>";
@@ -63,48 +121,41 @@ function buildStarElement() {
 }
 
 /*
- * GAME LOGIC SECTION
+ * Reset move counter and it's CSS
  */
-
- /*
-  *  SETUP LOGIC SECTION
-  */
-
- /*
-  * Starts a new game
-  */
- function startNewGame() {
-  resetClock();
-  createNewDeck();
-  createEventListeners();
-  startSecondsTimer();
-  ableToInteract = true;
-}
-
-// Reset and start a new game
-function onRestartGameClicked(e) {
-  if (ableToInteract) {
-    ableToInteract = false;
-    stopTimer = true;
-    removeEventListeners();
-    resetScore();
-    resetOpenCardArray();
-    startNewGame();
-  }
-}
-
-// Reset move counter and correspoding CSS
 function resetMoves() {
   numberOfMoves = 0;
   MOVES_TEXT.innerHTML = numberOfMoves;
 }
 
-function resetScore() {
-  numberOfMatches = 0;
-  starScore = TOTAL_STARS_POSSIBLE;
-  resetMoves();
+/*
+ * Reset the modal box CSS
+ */
+function resetModalBox() {
+  // Hide modal box if showing
+  if (MODAL.className.includes("show-modal")) {
+    toggleModalBox();
+  }
+
+  // Build new modal-content shell
+  let modalFragment = document.createDocumentFragment();
+
+  let newModalContent = document.createElement("div");
+  newModalContent.classList.add("modal-content");
+  newModalContent.innerHTML = "<span class='modal-close-button'>x</span>";
+
+  modalFragment.appendChild(newModalContent);
+
+  // Remove modal-content
+  MODAL.firstChild.remove();
+
+  // Add new modal-content
+  MODAL.appendChild(modalFragment);
 }
 
+/*
+ * Create the event listeners for the game
+ */
 function createEventListeners() {
   // Repoll for deck since the query is static not dynamic
   // and we replace the deck when we create a new one
@@ -116,38 +167,45 @@ function createEventListeners() {
   MODAL_CLOSE_BUTTON.addEventListener("click", onModalCloseClicked);
 }
 
+/*
+ * Remove the event listeners for the game
+ */
 function removeEventListeners() {
   currentDeck.removeEventListener("click", onCardClicked);
   RESTART_BUTTON.removeEventListener("click", onRestartGameClicked);
   MODAL_CLOSE_BUTTON.removeEventListener("click", onModalCloseClicked);
 }
 
+/*
+ * Toggles the score box visible/not visible
+ */
+function onModalCloseClicked() {
+  MODAL.classList.toggle("show-modal");
+  resetGame();
+}
+
+/*
+ * Toggles the score box visible/not visible
+ */
 function toggleModalBox() {
   MODAL.classList.toggle("show-modal");
 }
 
-function onModalCloseClicked() {
-  MODAL.classList.toggle("show-modal");
-}
-
-
-
-function resetClock() {
+/*
+ * Reset the game timer
+ */
+function resetGameTimer() {
   clearTimeout(secondsTimer);
   numberOfSeconds = 0;
   updateGameTimer();
 }
 
-function startSecondsTimer() {
-  secondsTimer = setTimeout(incrementSecondsTimer, 1000);
+/*
+ * Stars the game timer
+ */
+function startGameTimer() {
+  secondsTimer = setTimeout(incrementGameTimer, 1000);
 }
-
-function incrementSecondsTimer() {
-  numberOfSeconds++;
-  updateGameTimer();
-  startSecondsTimer();
-}
-
 
 /*
  * Shuffles the deck based on the current one and updates the DOM with the new deck
@@ -211,12 +269,12 @@ function shuffle(array) {
   return array;
 }
 
- /*
-  *  PLAY LOGIC SECTION
-  */
+/*
+ *  PLAY LOGIC SECTION
+ */
 
- /*
- * Event Handler for when a card is clicked. Checks to see which card was clicked and 
+/*
+ * Event Handler for when a card is clicked. Checks to see which card was clicked and
  * then checks to see if that card was 'clickable'.
  */
 function onCardClicked(e) {
@@ -234,7 +292,7 @@ function onCardClicked(e) {
 }
 
 /*
- * Determines if the player is able to click the card they clicked. 
+ * Determines if the player is able to click the card they clicked.
  * Aka the card is face-down and not open or matched. A player is not
  * penalized for clicking a card that is already showing.
  */
@@ -297,7 +355,7 @@ function determineMatch(cardClicked) {
 
 /*
  * Changes both cards to the match state since a match was found.
- * After doing so resets the open card array. 
+ * After doing so resets the open card array.
  */
 function foundMatch(cardClicked) {
   // Match fouund decrement counter
@@ -377,7 +435,16 @@ function removeStarElement() {
 }
 
 /*
- * Updates the game timer
+ * Increment the game timer
+ */
+function incrementGameTimer() {
+  numberOfSeconds++;
+  updateGameTimer();
+  startGameTimer();
+}
+
+/*
+ * Update the game timer element
  */
 function updateGameTimer() {
   GAME_TIMER.innerHTML = formatGameTimerText();
@@ -415,12 +482,15 @@ function endTurn() {
 function endGame() {
   updateModalBoxText();
   toggleModalBox();
+  endTurn();
 }
 
 /*
  * Formats End Game Score Box
  */
 function updateModalBoxText() {
+  let modalContent = document.querySelector(".modal-content");
+
   let modalTextHeader = document.createElement("h2");
   modalTextHeader.style.color = "#5FC663";
 
@@ -447,7 +517,7 @@ function updateModalBoxText() {
       break;
   }
 
-  MODAL_CONTENT.appendChild(modalTextHeader);
+  modalContent.appendChild(modalTextHeader);
 
   let numberOfMovesElement = document.createElement("h4");
   numberOfMovesElement.style.color = "#C4BBCD";
@@ -459,5 +529,5 @@ function updateModalBoxText() {
     numberOfSeconds;
   numberOfMovesElement.style.width = "auto";
 
-  MODAL_CONTENT.appendChild(numberOfMovesElement);
+  modalContent.appendChild(numberOfMovesElement);
 }
